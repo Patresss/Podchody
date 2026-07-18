@@ -7,6 +7,10 @@ COPY apps/web/package.json apps/web/package.json
 RUN npm ci
 
 COPY apps ./apps
+ARG VITE_APP_VERSION=dev
+ARG VITE_APP_BUILD_DATE
+ENV VITE_APP_VERSION=$VITE_APP_VERSION
+ENV VITE_APP_BUILD_DATE=$VITE_APP_BUILD_DATE
 RUN npm run build
 
 FROM node:24-bookworm-slim AS runtime

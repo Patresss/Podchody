@@ -5,7 +5,7 @@
 1. Przeglądarka wysyła zdjęcia do chronionego API.
 2. Serwer zapisuje oryginał, odczytuje EXIF przez ExifTool i przygotowuje JPEG do podglądu przez Sharp; HEIC ma osobną ścieżkę konwersji.
 3. Punkt, współrzędne EXIF, współrzędne skorygowane i pozycja schowka trafiają do SQLite.
-4. Generator trasy tworzy wiele ważonych permutacji i wybiera jedną z najlepszych, dzięki czemu wynik jest długi, ale ponowne losowanie nadal ma sens.
+4. Generator najpierw wybiera zdjęcia równomiernym losowaniem bez wag, a następnie tworzy wiele permutacji wybranego zestawu i układa kolejność zgodnie ze stylem trasy.
 5. Przeglądarka składa mapy, zdjęcia, ikony, zagadki oraz tekst w Canvas i zapisuje dwa PDF-y, dostępne osobno lub w ZIP. Nie jest używane AI ani zewnętrzny generator dokumentów.
 
 ## Moduły
@@ -23,19 +23,21 @@ Produkcja działa jako jeden proces Node.js. Serwer udostępnia zbudowany fronte
 
 - `projects` — niezależne miejsca/zabawy;
 - `points` — jedno zdjęcie i jeden punkt; zawiera oryginalny GPS, aktualny GPS oraz opcjonalny celownik schowka;
-- `routes` — nazwa, uporządkowana lista identyfikatorów punktów, policzone statystyki oraz opcjonalny typ zagadek.
+- `routes` — nazwa, uporządkowana lista identyfikatorów punktów, policzone statystyki oraz opcjonalne rodzaje zagadek.
 
 Usunięcie projektu usuwa również jego trasy, rekordy punktów i pliki zdjęć. Punkt używany przez zapisaną trasę jest chroniony przed przypadkowym usunięciem — najpierw trzeba usunąć tę trasę.
 
 ## Algorytm trasy
 
-Odległość między współrzędnymi jest liczona wzorem haversine. Dla każdej próby kolejny punkt jest losowany z wagą rosnącą wraz z odległością od bieżącego punktu. Kandydaci dostają ocenę za:
+Algorytm ma dwa niezależne etapy. Najpierw tasuje wszystkie dostępne zdjęcia algorytmem Fishera–Yatesa i bierze żądaną liczbę punktów. Każdy punkt ma dzięki temu jednakową szansę, niezależnie od położenia.
+
+Następnie planuje wyłącznie kolejność już wybranego zestawu. Odległość między współrzędnymi jest liczona wzorem haversine. Dla każdej próby kolejny punkt jest losowany z wagą odpowiednią dla wybranego stylu. Kandydaci dostają ocenę za:
 
 - dużą sumę długości odcinków;
 - dobry najkrótszy odcinek;
 - karę za odcinki wyraźnie krótsze od mediany odległości w zbiorze.
 
-Losowany jest jeden z najlepszych kandydatów, a nie zawsze pojedyncze optimum. Daje to różne sensowne wyniki przy **Losuj ponownie**. Trasa używa każdego wybranego punktu dokładnie raz i nie wraca automatycznie do startu.
+Losowany jest jeden z najlepszych układów, a nie zawsze pojedyncze optimum. Tryb **Dużo biegania** wpływa więc tylko na kolejność przejść, nigdy na to, które zdjęcia zostaną wybrane. Trasa używa każdego wybranego punktu dokładnie raz i nie wraca automatycznie do startu.
 
 ## API
 

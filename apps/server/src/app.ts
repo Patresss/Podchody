@@ -429,7 +429,8 @@ export async function createApp(configOverrides: Partial<AppConfig> = {}) {
     const projectPoints = listPoints(database, route.projectId);
     const pointMap = new Map(projectPoints.map((point) => [point.id, point]));
     let ordered;
-    if (route.generationMode === "automatic") {
+    const isStyleChange = body.distanceMode != null;
+    if (route.generationMode === "automatic" && !isStyleChange) {
       const located = projectPoints.filter((point): point is typeof point & { latitude: number; longitude: number } => point.latitude != null && point.longitude != null);
       if (located.length < route.pointIds.length) {
         response.status(400).json({ error: "Za mało zdjęć ma współrzędne, aby ponownie wylosować tę trasę." });

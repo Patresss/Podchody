@@ -1,6 +1,7 @@
 import { FolderHeart, LogOut, MapPinned } from "lucide-react";
 import type { ReactNode } from "react";
 import { Link, NavLink } from "react-router-dom";
+import { BuildInfo } from "./BuildInfo";
 
 type AppShellProps = {
   children: ReactNode;
@@ -23,6 +24,7 @@ export function AppShell({ children, username, onLogout }: AppShellProps) {
           <div className="avatar">{username.slice(0, 1).toUpperCase()}</div>
           <div><strong>{username}</strong><span>Administrator</span></div>
           <button className="icon-button" type="button" onClick={onLogout} aria-label="Wyloguj"><LogOut size={18} /></button>
+          <BuildInfo />
         </div>
       </aside>
       <div className="app-main">
@@ -31,6 +33,7 @@ export function AppShell({ children, username, onLogout }: AppShellProps) {
           <button className="icon-button" type="button" onClick={onLogout} aria-label="Wyloguj"><LogOut size={18} /></button>
         </header>
         {children}
+        <footer className="mobile-build-footer"><BuildInfo /></footer>
       </div>
     </div>
   );

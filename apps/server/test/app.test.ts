@@ -32,12 +32,14 @@ describe("API flow", () => {
     const projectId = projectResponse.body.project.id as string;
     const jpeg = await sharp({ create: { width: 120, height: 80, channels: 3, background: "#78a58e" } }).jpeg().toBuffer();
     const secondJpeg = await sharp({ create: { width: 120, height: 80, channels: 3, background: "#5b79ba" } }).jpeg().toBuffer();
+    const thirdJpeg = await sharp({ create: { width: 120, height: 80, channels: 3, background: "#c77b45" } }).jpeg().toBuffer();
     const uploadResponse = await agent.post(`/api/projects/${projectId}/photos`)
       .attach("photos", jpeg, { filename: "punkt-1.jpg", contentType: "image/jpeg" })
       .attach("photos", secondJpeg, { filename: "punkt-2.jpg", contentType: "image/jpeg" })
+      .attach("photos", thirdJpeg, { filename: "punkt-3.jpg", contentType: "image/jpeg" })
       .expect(201);
-    expect(uploadResponse.body.points).toHaveLength(2);
-    const [first, second] = uploadResponse.body.points as Array<{ id: string }>;
+    expect(uploadResponse.body.points).toHaveLength(3);
+    const [first, second, third] = uploadResponse.body.points as Array<{ id: string }>;
     const coverResponse = await agent.patch(`/api/projects/${projectId}`).send({ coverPointId: second!.id }).expect(200);
     expect(coverResponse.body.project.coverPointId).toBe(second!.id);
     expect(coverResponse.body.project.coverUrl).toContain(second!.id);
@@ -61,6 +63,7 @@ describe("API flow", () => {
     expect(namedPointResponse.body.point.displayName).toBe("Ławka przy zjeżdżalni");
     expect(namedPointResponse.body.point.symbol).toBe("bench");
     await agent.patch(`/api/points/${second!.id}`).send({ latitude: 50.0372, longitude: 19.9352 }).expect(200);
+    await agent.patch(`/api/points/${third!.id}`).send({ latitude: 50.0367, longitude: 19.9364 }).expect(200);
     const routeResponse = await agent.post(`/api/projects/${projectId}/routes`).send({
       name: "Dużo biegania",
       pointIds: [first!.id, second!.id],
@@ -85,8 +88,10 @@ describe("API flow", () => {
     }).expect(201);
     expect(automaticRouteResponse.body.route.pointIds).toHaveLength(2);
     expect(automaticRouteResponse.body.route.generationMode).toBe("automatic");
+    const selectedBeforeStyleChange = [...automaticRouteResponse.body.route.pointIds].sort();
     const rerolledResponse = await agent.post(`/api/routes/${automaticRouteResponse.body.route.id}/reroll`).send({ distanceMode: "compact" }).expect(200);
     expect(rerolledResponse.body.route.distanceMode).toBe("compact");
+    expect([...rerolledResponse.body.route.pointIds].sort()).toEqual(selectedBeforeStyleChange);
     database.close();
     await closeMetadataReader();
   });

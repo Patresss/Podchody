@@ -128,7 +128,7 @@ export function RoutePage() {
           try {
             const result = await api.rerollRoute(route.id, distanceMode);
             setRoute(result.route);
-            setToast({ kind: "success", message: "Zmieniono styl i ponownie ułożono trasę." });
+            setToast({ kind: "success", message: "Zmieniono styl i ponownie ułożono te same zdjęcia." });
           } catch (error) { setToast({ kind: "error", message: error instanceof Error ? error.message : "Nie udało się zmienić stylu trasy." }); }
           finally { setWorking(""); }
         }}><option value="maximum">Dużo biegania</option><option value="balanced">Zrównoważona</option><option value="compact">Krótsze przejścia</option></select></label></div>

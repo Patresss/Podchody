@@ -1,5 +1,6 @@
 import { Eye, EyeOff, MapPinned, ShieldCheck } from "lucide-react";
 import { useState } from "react";
+import { BuildInfo } from "../components/BuildInfo";
 
 export function LoginPage({ onLogin }: { onLogin: (username: string, password: string) => Promise<void> }) {
   const [username, setUsername] = useState("admin");
@@ -18,7 +19,7 @@ export function LoginPage({ onLogin }: { onLogin: (username: string, password: s
           <p>Ułóż punkty na mapie, wylosuj długą trasę i wydrukuj obrazkowe karty gotowe do schowania.</p>
         </div>
         <div className="story-path" aria-hidden="true"><span>1</span><i /><span>4</span><i /><span>7</span><i /><span>10</span></div>
-        <small>Twoje zdjęcia pozostają na Twoim serwerze.</small>
+        <div className="login-story-footer"><small>Twoje zdjęcia pozostają na Twoim serwerze.</small><BuildInfo /></div>
       </section>
       <section className="login-panel">
         <form className="login-card" onSubmit={async (event) => {

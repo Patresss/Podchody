@@ -66,9 +66,12 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .sidebar-footer strong, .sidebar-footer span { display: block; }
 .sidebar-footer strong { font-size: .83rem; }
 .sidebar-footer span { margin-top: 1px; color: #9ab0a9; font-size: .69rem; }
+.build-info { color: var(--muted); font-size: .61rem; font-weight: 560; letter-spacing: .025em; }
+.sidebar-footer .build-info { grid-column: 1 / -1; padding-top: 2px; color: #769088; text-align: center; }
 .sidebar .icon-button { color: #a9bdb7; }
 .app-main { min-width: 0; }
 .mobile-header { display: none; }
+.mobile-build-footer { display: none; }
 .page { width: min(1500px, 100%); margin: 0 auto; padding: 42px clamp(26px, 4vw, 66px) 80px; }
 
 .button { appearance: none; border: 0; border-radius: 12px; min-height: 43px; padding: 0 17px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; font-size: .88rem; font-weight: 690; transition: transform .16s ease, box-shadow .16s ease, background .16s ease; }
@@ -114,7 +117,9 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .story-path { display: flex; align-items: center; margin-bottom: 40px; position: relative; z-index: 1; }
 .story-path span { width: 38px; height: 38px; border: 1px solid rgba(203,243,108,.55); border-radius: 50%; display: grid; place-items: center; color: var(--lime); font-size: .82rem; font-weight: 800; }
 .story-path i { width: clamp(44px, 6vw, 90px); height: 1px; background: rgba(203,243,108,.3); }
-.login-story small { position: relative; z-index: 1; color: #91aaa2; }
+.login-story-footer { position: relative; z-index: 1; display: flex; align-items: center; justify-content: space-between; gap: 18px; }
+.login-story-footer small { color: #91aaa2; }
+.login-story-footer .build-info { color: #769088; white-space: nowrap; }
 .login-panel { display: grid; place-items: center; padding: 40px; }
 .login-card { width: min(430px, 100%); display: grid; gap: 22px; }
 .login-card h2 { margin-bottom: 6px; font-size: 2rem; }
@@ -445,6 +450,7 @@ a.project-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-md)
   .sidebar { display: none; }
   .mobile-header { height: 68px; padding: 0 20px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; background: rgba(242,244,238,.91); backdrop-filter: blur(15px); border-bottom: 1px solid rgba(220,226,219,.8); }
   .mobile-header .brand-mark { width: 35px; height: 35px; }
+  .mobile-build-footer { display: block; padding: 0 20px 18px; text-align: center; }
   .page { padding-top: 28px; }
   .login-page { grid-template-columns: .8fr 1.2fr; }
   .story-copy h1 { font-size: 3.5rem; }
@@ -475,7 +481,8 @@ a.project-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-md)
   .story-copy { margin: 70px 0 0; }
   .story-copy h1 { font-size: 2.75rem; }
   .story-copy p { margin-bottom: 0; }
-  .login-story small { display: none; }
+  .login-story-footer > small { display: none; }
+  .login-story-footer { margin-top: 22px; justify-content: flex-start; }
   .login-panel { padding: 30px 20px 50px; }
   .project-grid { grid-template-columns: 1fr; }
   .project-card-new { min-height: 210px; }

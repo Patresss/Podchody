@@ -39,7 +39,7 @@ export function CreateRouteModal({ availableCount, selectedCount, manualAvailabl
       }}>
         <div className="route-mode-grid" role="group" aria-label="Sposób wyboru zdjęć">
           <button className={`route-mode-card${mode === "automatic" ? " is-active" : ""}`} type="button" aria-pressed={mode === "automatic"} onClick={() => setMode("automatic")}>
-            <span><Sparkles size={20} /></span><strong>Wylosuj automatycznie</strong><small>Wybierz liczbę, a aplikacja znajdzie odległe miejsca.</small>
+            <span><Sparkles size={20} /></span><strong>Wylosuj automatycznie</strong><small>Każde zdjęcie ma dokładnie taką samą szansę.</small>
           </button>
           <button className={`route-mode-card${mode === "manual" ? " is-active" : ""}`} type="button" aria-pressed={mode === "manual"} disabled={!manualAvailable} onClick={() => setMode("manual")}>
             <span><CheckSquare size={20} /></span><strong>Użyj zaznaczonych</strong><small>{selectedCount} zaznaczonych zdjęć{!manualAvailable && selectedCount >= 2 ? " · uzupełnij GPS" : ""}</small>
@@ -58,11 +58,11 @@ export function CreateRouteModal({ availableCount, selectedCount, manualAvailabl
         )}
 
         <fieldset className="route-distance-fieldset">
-          <legend>Styl przejść między punktami</legend>
+          <legend>Jak ułożyć wybrane punkty?</legend>
           <div className="route-distance-options">
-            <button type="button" className={distanceMode === "maximum" ? "is-active" : ""} aria-pressed={distanceMode === "maximum"} onClick={() => setDistanceMode("maximum")}><Footprints size={18} /><strong>Dużo biegania</strong><small>Najdłuższe odcinki</small></button>
-            <button type="button" className={distanceMode === "balanced" ? "is-active" : ""} aria-pressed={distanceMode === "balanced"} onClick={() => setDistanceMode("balanced")}><Gauge size={18} /><strong>Zrównoważona</strong><small>Długie i średnie</small></button>
-            <button type="button" className={distanceMode === "compact" ? "is-active" : ""} aria-pressed={distanceMode === "compact"} onClick={() => setDistanceMode("compact")}><Sparkles size={18} /><strong>Krótsze przejścia</strong><small>Punkty bliżej siebie</small></button>
+            <button type="button" className={distanceMode === "maximum" ? "is-active" : ""} aria-pressed={distanceMode === "maximum"} onClick={() => setDistanceMode("maximum")}><Footprints size={18} /><strong>Dużo biegania</strong><small>Układa najdłuższe przejścia</small></button>
+            <button type="button" className={distanceMode === "balanced" ? "is-active" : ""} aria-pressed={distanceMode === "balanced"} onClick={() => setDistanceMode("balanced")}><Gauge size={18} /><strong>Zrównoważona</strong><small>Miesza długie i średnie przejścia</small></button>
+            <button type="button" className={distanceMode === "compact" ? "is-active" : ""} aria-pressed={distanceMode === "compact"} onClick={() => setDistanceMode("compact")}><Sparkles size={18} /><strong>Krótsze przejścia</strong><small>Układa najkrótszą kolejność</small></button>
           </div>
         </fieldset>
 
@@ -80,7 +80,7 @@ export function CreateRouteModal({ availableCount, selectedCount, manualAvailabl
         </fieldset>
 
         <label><span>Nazwa trasy</span><input value={name} maxLength={80} onChange={(event) => setName(event.target.value)} required /></label>
-        <p className="form-note">{distanceMode === "maximum" ? "Algorytm będzie przeplatał odległe części mapy, aby dzieci miały dużo biegania." : distanceMode === "balanced" ? "Trasa połączy dłuższe odcinki z kilkoma spokojniejszymi przejściami." : "Algorytm wybierze sąsiadujące miejsca i ograniczy długość kolejnych przejść."}</p>
+        <p className="form-note">{mode === "automatic" ? "Najpierw zdjęcia zostaną wylosowane bez wag. Następnie " : ""}{distanceMode === "maximum" ? "algorytm ułoży wybrane punkty tak, aby dzieci miały dużo biegania." : distanceMode === "balanced" ? "algorytm ułoży wybrane punkty w trasę z długimi i średnimi przejściami." : "algorytm ułoży wybrane punkty w możliwie krótką trasę."}</p>
         {error && <div className="form-error" role="alert">{error}</div>}
         <div className="modal-actions"><button className="button button-secondary" type="button" onClick={onClose}>Anuluj</button><button className="button button-primary" disabled={saving || (puzzlesEnabled && puzzleTypes.length === 0)} type="submit">{saving ? "Szukam najlepszej trasy…" : mode === "automatic" ? `Wylosuj ${count} punktów` : `Utwórz z ${selectedCount} punktów`}</button></div>
       </form>

@@ -23,11 +23,13 @@ Na karcie **Mapa** można przeciągnąć znacznik ze zdjęciem. Aplikacja celowo
 
 ## 4. Wylosuj trasę
 
-W zakładce **Zdjęcia** albo **Mapa** zaznacz co najmniej dwa punkty i wybierz **Utwórz trasę**. Algorytm próbuje zwiększyć łączny dystans oraz unikać bardzo krótkich odcinków. Odległości są liczone w linii prostej, więc przed wydrukiem warto ocenić bezpieczeństwo przejść na mapie.
+W zakładce **Zdjęcia** albo **Mapa** wybierz **Utwórz trasę**. Możesz użyć ręcznie zaznaczonych punktów albo podać liczbę zdjęć do automatycznego losowania. W trybie automatycznym każde zdjęcie z GPS ma dokładnie taką samą szansę — odległość nie wpływa na wybór zestawu.
+
+Dopiero po wybraniu zdjęć aplikacja układa ich kolejność zgodnie ze stylem **Dużo biegania**, **Zrównoważona** albo **Krótsze przejścia**. Zmiana stylu nie wymienia zdjęć, tylko ponownie układa te same punkty. Odległości są liczone w linii prostej, więc przed wydrukiem warto ocenić bezpieczeństwo przejść na mapie.
 
 Na ekranie trasy można:
 
-- wybrać **Losuj ponownie**;
+- wybrać **Losuj ponownie** — przy trasie automatycznej powstanie nowy, równomiernie losowy zestaw zdjęć;
 - przeciągać wiersze, aby ręcznie poprawić kolejność;
 - przełączyć się na **Kolejność chowania**, aby zobaczyć krótszą drogę organizatora;
 - zmienić zestaw **Zagadki** albo wybrać **Bez zagadek** bez tworzenia trasy od początku;

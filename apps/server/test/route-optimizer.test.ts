@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { generateRoute, optimizeRoute, routeMetrics, type CoordinatePoint } from "../src/route-optimizer.js";
+import { generateRoute, optimizeRoute, routeMetrics, selectRandomPoints, type CoordinatePoint } from "../src/route-optimizer.js";
 
 function seededRandom(seed = 12345) {
   return () => {
@@ -30,32 +30,32 @@ describe("route optimizer", () => {
     expect(optimized).toBeGreaterThan(theoreticalBest * 0.9);
   });
 
-  it("selects the requested number of points and alternates distant areas", () => {
-    const clustered: CoordinatePoint[] = [
-      { id: "left-1", latitude: 50.0360, longitude: 19.9300 },
-      { id: "left-2", latitude: 50.0361, longitude: 19.9301 },
-      { id: "left-3", latitude: 50.0362, longitude: 19.9300 },
-      { id: "left-4", latitude: 50.0363, longitude: 19.9301 },
-      { id: "right-1", latitude: 50.0360, longitude: 19.9400 },
-      { id: "right-2", latitude: 50.0361, longitude: 19.9401 },
-      { id: "right-3", latitude: 50.0362, longitude: 19.9400 },
-      { id: "right-4", latitude: 50.0363, longitude: 19.9401 },
-      { id: "middle-1", latitude: 50.0360, longitude: 19.9350 },
-      { id: "middle-2", latitude: 50.0363, longitude: 19.9351 },
-    ];
-    const route = generateRoute(clustered, 6, seededRandom(77));
-    const metrics = routeMetrics(route);
-    expect(route).toHaveLength(6);
-    expect(new Set(route.map((point) => point.id)).size).toBe(6);
-    expect(route.some((point) => point.id.startsWith("left"))).toBe(true);
-    expect(route.some((point) => point.id.startsWith("right"))).toBe(true);
-    expect(metrics.minLegMeters).toBeGreaterThan(600);
+  it("selects every point with an equal probability and without duplicates", () => {
+    const random = seededRandom(77);
+    const runs = 8_000;
+    const selectedPerRun = 3;
+    const frequencies = new Map(points.map((point) => [point.id, 0]));
+    for (let run = 0; run < runs; run += 1) {
+      const selected = selectRandomPoints(points, selectedPerRun, random);
+      expect(new Set(selected.map((point) => point.id)).size).toBe(selectedPerRun);
+      selected.forEach((point) => frequencies.set(point.id, frequencies.get(point.id)! + 1));
+    }
+    const expected = runs * selectedPerRun / points.length;
+    frequencies.forEach((frequency) => expect(Math.abs(frequency - expected)).toBeLessThan(expected * 0.05));
+  });
+
+  it("uses the distance style only for ordering, not for selecting points", () => {
+    const maximum = generateRoute(points, 4, seededRandom(91), "maximum").map((point) => point.id).sort();
+    const balanced = generateRoute(points, 4, seededRandom(91), "balanced").map((point) => point.id).sort();
+    const compact = generateRoute(points, 4, seededRandom(91), "compact").map((point) => point.id).sort();
+    expect(maximum).toEqual(balanced);
+    expect(maximum).toEqual(compact);
   });
 
   it("offers meaningfully different distance styles", () => {
-    const maximum = routeMetrics(generateRoute(points, 4, seededRandom(91), "maximum")).totalDistanceMeters;
-    const balanced = routeMetrics(generateRoute(points, 4, seededRandom(91), "balanced")).totalDistanceMeters;
-    const compact = routeMetrics(generateRoute(points, 4, seededRandom(91), "compact")).totalDistanceMeters;
+    const maximum = routeMetrics(optimizeRoute(points, seededRandom(91), "maximum")).totalDistanceMeters;
+    const balanced = routeMetrics(optimizeRoute(points, seededRandom(91), "balanced")).totalDistanceMeters;
+    const compact = routeMetrics(optimizeRoute(points, seededRandom(91), "compact")).totalDistanceMeters;
     expect(maximum).toBeGreaterThan(balanced * 1.2);
     expect(balanced).toBeGreaterThan(compact * 1.2);
   });

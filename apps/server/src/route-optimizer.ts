@@ -136,11 +136,22 @@ function improveRoute(route: CoordinatePoint[], pairMedian: number, mode: RouteD
   return { route: best, score: bestScore };
 }
 
-export function generateRoute(points: CoordinatePoint[], targetCount: number, random: () => number = Math.random, mode: RouteDistanceMode = "maximum") {
+export function selectRandomPoints(points: CoordinatePoint[], targetCount: number, random: () => number = Math.random) {
   if (points.length < 2) throw new Error("Trasa wymaga co najmniej dwóch punktów.");
   if (!Number.isInteger(targetCount) || targetCount < 2 || targetCount > points.length) {
     throw new Error(`Liczba punktów musi mieścić się między 2 a ${points.length}.`);
   }
+
+  const shuffled = [...points];
+  for (let index = shuffled.length - 1; index > 0; index -= 1) {
+    const target = Math.floor(random() * (index + 1));
+    [shuffled[index], shuffled[target]] = [shuffled[target]!, shuffled[index]!];
+  }
+  return shuffled.slice(0, targetCount);
+}
+
+function planRoute(points: CoordinatePoint[], random: () => number, mode: RouteDistanceMode) {
+  const targetCount = points.length;
   const pairDistances: number[] = [];
   for (let a = 0; a < points.length; a += 1) {
     for (let b = a + 1; b < points.length; b += 1) {
@@ -173,6 +184,12 @@ export function generateRoute(points: CoordinatePoint[], targetCount: number, ra
   return candidates[Math.floor(random() * topCount)]!.route;
 }
 
+export function generateRoute(points: CoordinatePoint[], targetCount: number, random: () => number = Math.random, mode: RouteDistanceMode = "maximum") {
+  const selected = selectRandomPoints(points, targetCount, random);
+  return planRoute(selected, random, mode);
+}
+
 export function optimizeRoute(points: CoordinatePoint[], random: () => number = Math.random, mode: RouteDistanceMode = "maximum") {
-  return generateRoute(points, points.length, random, mode);
+  if (points.length < 2) throw new Error("Trasa wymaga co najmniej dwóch punktów.");
+  return planRoute(points, random, mode);
 }

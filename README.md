@@ -21,7 +21,8 @@ Aplikacja jest projektowana przede wszystkim z myślą o dzieciach, które jeszc
 
 - dowolna liczba projektów, dzięki czemu aplikację można wykorzystać na innym osiedlu, w parku albo podczas wyjazdu;
 - wybór konkretnej liczby punktów, zaznaczanie wszystkich zdjęć i zaznaczanie zakresów z klawiszem Shift;
-- algorytm preferujący długie odcinki, aby dzieci biegały pomiędzy odległymi punktami;
+- równomierne losowanie zdjęć — każdy punkt ma dokładnie taką samą szansę wejścia do trasy;
+- osobne planowanie kolejności wybranych punktów: dużo biegania, trasa zrównoważona albo krótsze przejścia;
 - ponowne losowanie oraz ręczna zmiana kolejności;
 - osobna, krótka kolejność chowania kartek dla organizatora;
 - podsumowanie długości trasy szukających i chowającego;
@@ -117,6 +118,7 @@ Polecenie uruchamia sprawdzanie typów, testy backendu i frontendu oraz produkcy
 - Express, SQLite, ExifTool i Sharp;
 - Canvas, jsPDF i JSZip;
 - pojedynczy obraz Docker oraz trwały katalog danych.
+- subtelna wersja oparta o identyfikator commita i data aktualizacji widoczna w aplikacji.
 
 ## Dokumentacja
 
