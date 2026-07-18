@@ -40,11 +40,14 @@ const pointUpdateSchema = z.object({
   symbol: z.enum(["pin", "tree", "bench", "playground", "building", "ball", "entrance", "lamp", "nature", "flag"]).nullable().optional(),
 });
 
+const puzzleTypeSchema = z.enum(["counting", "patterns", "matching", "word-copy", "missing-letter", "math-10", "math-20"]);
+const puzzleTypesSchema = z.array(puzzleTypeSchema).max(7).refine((values) => new Set(values).size === values.length, { message: "Każdy rodzaj zagadki wybierz tylko raz." });
+
 const routeCreateSchema = z.object({
   name: z.string().trim().min(1).max(80),
   mode: z.enum(["manual", "automatic"]).default("manual"),
   distanceMode: z.enum(["maximum", "balanced", "compact"]).default("maximum"),
-  puzzleType: z.enum(["counting", "patterns", "math-10", "math-20"]).nullable().default(null),
+  puzzleTypes: puzzleTypesSchema.default([]),
   pointIds: z.array(z.string().uuid()).min(2).max(100).optional(),
   count: z.number().int().min(2).max(100).optional(),
 }).superRefine((body, context) => {
@@ -63,6 +66,11 @@ const routeOrderSchema = z.object({
 const routeRerollSchema = z.object({
   distanceMode: z.enum(["maximum", "balanced", "compact"]).optional(),
 });
+
+const routeUpdateSchema = z.object({
+  name: z.string().trim().min(1).max(80).optional(),
+  puzzleTypes: puzzleTypesSchema.optional(),
+}).refine((body) => body.name !== undefined || body.puzzleTypes !== undefined, { message: "Podaj ustawienie do zmiany." });
 
 function parseBody<T>(schema: z.ZodType<T>, value: unknown) {
   const result = schema.safeParse(value);
@@ -397,7 +405,7 @@ export async function createApp(configOverrides: Partial<AppConfig> = {}) {
     const id = randomUUID();
     const now = new Date().toISOString();
     database.prepare("INSERT INTO routes (id, project_id, name, point_ids, generation_mode, distance_mode, puzzle_type, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)")
-      .run(id, project.id, body.name, JSON.stringify(ordered.map((point) => point.id)), body.mode, body.distanceMode, body.puzzleType, now, now);
+      .run(id, project.id, body.name, JSON.stringify(ordered.map((point) => point.id)), body.mode, body.distanceMode, body.puzzleTypes.length ? JSON.stringify(body.puzzleTypes) : null, now, now);
     response.status(201).json({ route: getRoute(database, id) });
   });
 
@@ -464,9 +472,11 @@ export async function createApp(configOverrides: Partial<AppConfig> = {}) {
       response.status(404).json({ error: "Nie znaleziono trasy." });
       return;
     }
-    const body = parseBody(z.object({ name: z.string().trim().min(1).max(80) }), request.body);
-    database.prepare("UPDATE routes SET name = ?, updated_at = ? WHERE id = ?")
-      .run(body.name, new Date().toISOString(), route.id);
+    const body = parseBody(routeUpdateSchema, request.body);
+    const name = body.name ?? route.name;
+    const puzzleTypes = body.puzzleTypes ?? route.puzzleTypes;
+    database.prepare("UPDATE routes SET name = ?, puzzle_type = ?, updated_at = ? WHERE id = ?")
+      .run(name, puzzleTypes.length ? JSON.stringify(puzzleTypes) : null, new Date().toISOString(), route.id);
     response.json({ route: getRoute(database, route.id) });
   });
 

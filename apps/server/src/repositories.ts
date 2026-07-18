@@ -1,6 +1,6 @@
 import type { AppDatabase } from "./database.js";
 import { haversineMeters, type CoordinatePoint } from "./route-optimizer.js";
-import type { Point, Project, Route } from "./types.js";
+import type { Point, Project, PuzzleType, Route } from "./types.js";
 
 type ProjectRow = {
   id: string;
@@ -38,7 +38,7 @@ type RouteRow = {
   point_ids: string;
   generation_mode: "manual" | "automatic";
   distance_mode: "maximum" | "balanced" | "compact";
-  puzzle_type: Route["puzzleType"];
+  puzzle_type: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -138,12 +138,23 @@ export function routeWithMetrics(database: AppDatabase, row: RouteRow): Route {
     pointIds,
     generationMode: row.generation_mode,
     distanceMode: row.distance_mode,
-    puzzleType: row.puzzle_type,
+    puzzleTypes: parsePuzzleTypes(row.puzzle_type),
     createdAt: row.created_at,
     updatedAt: row.updated_at,
     totalDistanceMeters: legs.reduce((sum, distance) => sum + distance, 0),
     minLegMeters: legs.length ? Math.min(...legs) : 0,
   };
+}
+
+function parsePuzzleTypes(value: string | null): PuzzleType[] {
+  if (!value) return [];
+  try {
+    const parsed = JSON.parse(value) as unknown;
+    if (Array.isArray(parsed)) return parsed as PuzzleType[];
+  } catch {
+    // Starsze trasy przechowywały pojedynczy typ jako zwykły tekst.
+  }
+  return [value as PuzzleType];
 }
 
 export function listRoutes(database: AppDatabase, projectId: string) {

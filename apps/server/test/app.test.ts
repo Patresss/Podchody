@@ -64,13 +64,20 @@ describe("API flow", () => {
     const routeResponse = await agent.post(`/api/projects/${projectId}/routes`).send({
       name: "Dużo biegania",
       pointIds: [first!.id, second!.id],
-      puzzleType: "math-20",
+      puzzleTypes: ["math-20", "matching"],
     }).expect(201);
     expect(routeResponse.body.route.pointIds).toHaveLength(2);
     expect(routeResponse.body.route.totalDistanceMeters).toBeGreaterThan(100);
     expect(routeResponse.body.route.generationMode).toBe("manual");
     expect(routeResponse.body.route.distanceMode).toBe("maximum");
-    expect(routeResponse.body.route.puzzleType).toBe("math-20");
+    expect(routeResponse.body.route.puzzleTypes).toEqual(["math-20", "matching"]);
+    const changedPuzzleResponse = await agent.patch(`/api/routes/${routeResponse.body.route.id}`).send({ puzzleTypes: ["word-copy", "counting"] }).expect(200);
+    expect(changedPuzzleResponse.body.route.puzzleTypes).toEqual(["word-copy", "counting"]);
+    const disabledPuzzleResponse = await agent.patch(`/api/routes/${routeResponse.body.route.id}`).send({ puzzleTypes: [] }).expect(200);
+    expect(disabledPuzzleResponse.body.route.puzzleTypes).toEqual([]);
+    database.prepare("UPDATE routes SET puzzle_type = ? WHERE id = ?").run("math-10", routeResponse.body.route.id);
+    const legacyPuzzleResponse = await agent.get(`/api/routes/${routeResponse.body.route.id}`).expect(200);
+    expect(legacyPuzzleResponse.body.route.puzzleTypes).toEqual(["math-10"]);
     const automaticRouteResponse = await agent.post(`/api/projects/${projectId}/routes`).send({
       name: "Automatyczna trasa",
       mode: "automatic",

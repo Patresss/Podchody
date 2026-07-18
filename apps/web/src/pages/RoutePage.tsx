@@ -15,17 +15,19 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { ArrowLeft, ChevronDown, Download, FileText, Flag, Footprints, GripVertical, Map as MapIcon, MoreHorizontal, RefreshCw, Route as RouteIcon, Sparkles, Trash2 } from "lucide-react";
+import { ArrowLeft, Brain, ChevronDown, ChevronRight, Download, FileText, Flag, Footprints, GripVertical, Map as MapIcon, MoreHorizontal, RefreshCw, Route as RouteIcon, Sparkles, Trash2 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { MapView, type MapViewHandle } from "../components/MapView";
 import { PointSymbolIcon } from "../components/PointSymbol";
+import { PuzzleSettingsModal } from "../components/PuzzleSettingsModal";
 import { Toast, type ToastState } from "../components/Toast";
 import { api } from "../lib/api";
 import { distanceMeters, formatDistance } from "../lib/geo";
 import { optimizeHidingOrder, pathDistanceMeters } from "../lib/hiding-order";
 import type { PrintDocumentKind } from "../lib/pdf";
 import { versionedPhotoUrl } from "../lib/photo-url";
+import { puzzleSelectionLabel } from "../lib/puzzles";
 import type { Point, Project, RouteDistanceMode, RoutePlan } from "../types";
 
 export function RoutePage() {
@@ -39,6 +41,7 @@ export function RoutePage() {
   const [toast, setToast] = useState<ToastState>(null);
   const [showMenu, setShowMenu] = useState(false);
   const [showDownloadMenu, setShowDownloadMenu] = useState(false);
+  const [showPuzzleSettings, setShowPuzzleSettings] = useState(false);
   const [orderView, setOrderView] = useState<"game" | "hiding">("game");
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
@@ -129,6 +132,7 @@ export function RoutePage() {
           } catch (error) { setToast({ kind: "error", message: error instanceof Error ? error.message : "Nie udało się zmienić stylu trasy." }); }
           finally { setWorking(""); }
         }}><option value="maximum">Dużo biegania</option><option value="balanced">Zrównoważona</option><option value="compact">Krótsze przejścia</option></select></label></div>
+        <div className="route-score route-puzzle-score"><Brain size={18} aria-hidden="true" /><button type="button" disabled={Boolean(working)} aria-label="Zmień zagadki na kartach" onClick={() => setShowPuzzleSettings(true)}><span>ZAGADKI</span><strong>{puzzleSelectionLabel(route.puzzleTypes)}</strong><ChevronRight size={16} aria-hidden="true" /></button></div>
       </section>
 
       <div className="route-order-tabs" role="tablist" aria-label="Rodzaj kolejności">
@@ -161,6 +165,12 @@ export function RoutePage() {
       </section>
 
       {working && <div className="working-overlay" role="status"><span className="working-spinner" /><strong>{working}</strong><small>Nie zamykaj tej karty.</small></div>}
+      {showPuzzleSettings && <PuzzleSettingsModal selected={route.puzzleTypes} onClose={() => setShowPuzzleSettings(false)} onSave={async (puzzleTypes) => {
+        const result = await api.updateRoutePuzzles(route.id, puzzleTypes);
+        setRoute(result.route);
+        setShowPuzzleSettings(false);
+        setToast({ kind: "success", message: puzzleTypes.length ? "Zapisano zestaw zagadek. Karty zostaną podzielone możliwie równo i losowo." : "Wyłączono zagadki na kartach." });
+      }} />}
       <Toast toast={toast} onClose={() => setToast(null)} />
     </main>
   );

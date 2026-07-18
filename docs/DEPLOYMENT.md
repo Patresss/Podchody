@@ -1,5 +1,7 @@
 # Wdrożenie na własnym serwerze
 
+Gotowa instrukcja publikowania obrazu w GitHub Container Registry i uruchomienia go w Dockerze na Synology znajduje się w [instrukcji dla Synology](SYNOLOGY.md). Nie zawiera ona prywatnego adresu NAS-a ani portu SSH.
+
 ## Wariant zalecany: Docker Compose
 
 W katalogu aplikacji wykonaj:

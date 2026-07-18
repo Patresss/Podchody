@@ -32,7 +32,7 @@ export type Point = {
 export type PointSymbol = "pin" | "tree" | "bench" | "playground" | "building" | "ball" | "entrance" | "lamp" | "nature" | "flag";
 
 export type RouteDistanceMode = "maximum" | "balanced" | "compact";
-export type PuzzleType = "counting" | "patterns" | "math-10" | "math-20";
+export type PuzzleType = "counting" | "patterns" | "matching" | "word-copy" | "missing-letter" | "math-10" | "math-20";
 
 export type RoutePlan = {
   id: string;
@@ -41,7 +41,7 @@ export type RoutePlan = {
   pointIds: string[];
   generationMode: "manual" | "automatic";
   distanceMode: RouteDistanceMode;
-  puzzleType: PuzzleType | null;
+  puzzleTypes: PuzzleType[];
   createdAt: string;
   updatedAt: string;
   totalDistanceMeters: number;

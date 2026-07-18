@@ -228,7 +228,7 @@ export function ProjectPage() {
       }} onPlaceOnMap={() => { setPlacingPoint(inspected); setInspected(null); setTab("map"); }} /></Modal>}
 
       {showRouteModal && <CreateRouteModal availableCount={locatedCount} selectedCount={selectedIds.size} manualAvailable={selectedIds.size >= 2 && missingLocationCount === 0} onClose={() => setShowRouteModal(false)} onCreate={async (name, choice) => {
-        const result = await api.createRoute(project.id, name, choice.mode === "automatic" ? choice : { mode: "manual", pointIds: Array.from(selectedIds), distanceMode: choice.distanceMode, puzzleType: choice.puzzleType });
+        const result = await api.createRoute(project.id, name, choice.mode === "automatic" ? choice : { mode: "manual", pointIds: Array.from(selectedIds), distanceMode: choice.distanceMode, puzzleTypes: choice.puzzleTypes });
         navigate(`/projects/${project.id}/routes/${result.route.id}`);
       }} />}
 

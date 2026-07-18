@@ -36,11 +36,11 @@ export type Route = {
   pointIds: string[];
   generationMode: "manual" | "automatic";
   distanceMode: "maximum" | "balanced" | "compact";
-  puzzleType: PuzzleType | null;
+  puzzleTypes: PuzzleType[];
   createdAt: string;
   updatedAt: string;
   totalDistanceMeters?: number;
   minLegMeters?: number;
 };
 
-export type PuzzleType = "counting" | "patterns" | "math-10" | "math-20";
+export type PuzzleType = "counting" | "patterns" | "matching" | "word-copy" | "missing-letter" | "math-10" | "math-20";

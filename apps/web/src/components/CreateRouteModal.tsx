@@ -1,11 +1,12 @@
-import { Brain, Calculator, CheckSquare, CircleDotDashed, Footprints, Gauge, Minus, Plus, Shapes, Sparkles } from "lucide-react";
+import { Brain, CheckSquare, Footprints, Gauge, Minus, Plus, Sparkles } from "lucide-react";
 import { useState } from "react";
 import type { PuzzleType, RouteDistanceMode } from "../types";
 import { Modal } from "./Modal";
+import { PuzzleTypePicker } from "./PuzzleTypePicker";
 
 export type RouteCreationChoice =
-  | { mode: "automatic"; count: number; distanceMode: RouteDistanceMode; puzzleType: PuzzleType | null }
-  | { mode: "manual"; distanceMode: RouteDistanceMode; puzzleType: PuzzleType | null };
+  | { mode: "automatic"; count: number; distanceMode: RouteDistanceMode; puzzleTypes: PuzzleType[] }
+  | { mode: "manual"; distanceMode: RouteDistanceMode; puzzleTypes: PuzzleType[] };
 
 type CreateRouteModalProps = {
   availableCount: number;
@@ -20,7 +21,7 @@ export function CreateRouteModal({ availableCount, selectedCount, manualAvailabl
   const [count, setCount] = useState(Math.min(10, availableCount));
   const [distanceMode, setDistanceMode] = useState<RouteDistanceMode>("maximum");
   const [puzzlesEnabled, setPuzzlesEnabled] = useState(false);
-  const [puzzleType, setPuzzleType] = useState<PuzzleType>("counting");
+  const [puzzleTypes, setPuzzleTypes] = useState<PuzzleType[]>(["counting"]);
   const [name, setName] = useState(`Trasa ${new Intl.DateTimeFormat("pl-PL", { day: "numeric", month: "long" }).format(new Date())}`);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -32,7 +33,7 @@ export function CreateRouteModal({ availableCount, selectedCount, manualAvailabl
         event.preventDefault();
         setSaving(true);
         setError("");
-        try { await onCreate(name, mode === "automatic" ? { mode, count, distanceMode, puzzleType: puzzlesEnabled ? puzzleType : null } : { mode, distanceMode, puzzleType: puzzlesEnabled ? puzzleType : null }); }
+        try { await onCreate(name, mode === "automatic" ? { mode, count, distanceMode, puzzleTypes: puzzlesEnabled ? puzzleTypes : [] } : { mode, distanceMode, puzzleTypes: puzzlesEnabled ? puzzleTypes : [] }); }
         catch (reason) { setError(reason instanceof Error ? reason.message : "Nie udało się utworzyć trasy."); }
         finally { setSaving(false); }
       }}>
@@ -72,18 +73,16 @@ export function CreateRouteModal({ availableCount, selectedCount, manualAvailabl
             <span><strong>Zagadki na kartach</strong><small>Na dole każdej karty pojawi się inne, losowe zadanie.</small></span>
             <i aria-hidden="true" />
           </button>
-          {puzzlesEnabled && <div className="puzzle-type-options" role="group" aria-label="Rodzaj zagadek">
-            <button type="button" className={puzzleType === "counting" ? "is-active" : ""} aria-pressed={puzzleType === "counting"} onClick={() => setPuzzleType("counting")}><CircleDotDashed size={18} /><span><strong>Policz kropki</strong><small>Obrazkowe, bez czytania</small></span></button>
-            <button type="button" className={puzzleType === "patterns" ? "is-active" : ""} aria-pressed={puzzleType === "patterns"} onClick={() => setPuzzleType("patterns")}><Shapes size={18} /><span><strong>Dokończ wzór</strong><small>Kształty, bez czytania</small></span></button>
-            <button type="button" className={puzzleType === "math-10" ? "is-active" : ""} aria-pressed={puzzleType === "math-10"} onClick={() => setPuzzleType("math-10")}><Calculator size={18} /><span><strong>Dodawanie i odejmowanie do 10</strong><small>Łatwiejsza matematyka</small></span></button>
-            <button type="button" className={puzzleType === "math-20" ? "is-active" : ""} aria-pressed={puzzleType === "math-20"} onClick={() => setPuzzleType("math-20")}><Calculator size={18} /><span><strong>Dodawanie i odejmowanie do 20</strong><small>Trudniejsza matematyka</small></span></button>
-          </div>}
+          {puzzlesEnabled && <>
+            <PuzzleTypePicker selected={puzzleTypes} onChange={setPuzzleTypes} />
+            <p className="puzzle-selection-hint">{puzzleTypes.length ? "Możesz zaznaczyć kilka rodzajów. Karty zostaną podzielone między nie możliwie równo." : "Wybierz co najmniej jeden rodzaj zagadek."}</p>
+          </>}
         </fieldset>
 
         <label><span>Nazwa trasy</span><input value={name} maxLength={80} onChange={(event) => setName(event.target.value)} required /></label>
         <p className="form-note">{distanceMode === "maximum" ? "Algorytm będzie przeplatał odległe części mapy, aby dzieci miały dużo biegania." : distanceMode === "balanced" ? "Trasa połączy dłuższe odcinki z kilkoma spokojniejszymi przejściami." : "Algorytm wybierze sąsiadujące miejsca i ograniczy długość kolejnych przejść."}</p>
         {error && <div className="form-error" role="alert">{error}</div>}
-        <div className="modal-actions"><button className="button button-secondary" type="button" onClick={onClose}>Anuluj</button><button className="button button-primary" disabled={saving} type="submit">{saving ? "Szukam najlepszej trasy…" : mode === "automatic" ? `Wylosuj ${count} punktów` : `Utwórz z ${selectedCount} punktów`}</button></div>
+        <div className="modal-actions"><button className="button button-secondary" type="button" onClick={onClose}>Anuluj</button><button className="button button-primary" disabled={saving || (puzzlesEnabled && puzzleTypes.length === 0)} type="submit">{saving ? "Szukam najlepszej trasy…" : mode === "automatic" ? `Wylosuj ${count} punktów` : `Utwórz z ${selectedCount} punktów`}</button></div>
       </form>
     </Modal>
   );

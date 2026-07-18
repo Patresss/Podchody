@@ -28,8 +28,13 @@ Aplikacja jest projektowana przede wszystkim z myślą o dzieciach, które jeszc
 - opcjonalne losowe zagadki na kartach:
   - liczenie kropek,
   - dokończenie obrazkowego wzoru,
+  - łączenie takich samych kształtów,
+  - przepisywanie krótkiego słowa pokazanego obok obrazka,
+  - uzupełnianie brakującej litery,
   - dodawanie i odejmowanie do 10,
   - dodawanie i odejmowanie do 20.
+- możliwość wybrania jednego lub kilku rodzajów zagadek, zmiany zestawu albo jego wyłączenia również po utworzeniu trasy;
+- równomierne i losowe rozdzielenie wybranych rodzajów między karty — przy dwóch rodzajach połowa kart otrzymuje jeden, a połowa drugi (przy nieparzystej liczbie różnica wynosi najwyżej jedną kartę);
 
 ### Materiały do druku
 
@@ -40,6 +45,8 @@ Aplikacja jest projektowana przede wszystkim z myślą o dzieciach, które jeszc
 - bezpośrednie pobieranie każdego PDF-u albo całego zestawu jako ZIP;
 - dokumenty są składane programistycznie w przeglądarce — bez AI i bez wysyłania zdjęć do zewnętrznego generatora.
 
+Zadania są przygotowane do rozwiązywania zwykłym ołówkiem. Kształty i kropki nie wykorzystują koloru jako podpowiedzi, dlatego pozostają jednoznaczne również na wydruku czarno-białym.
+
 ## Jak działa zabawa
 
 Karta startowa pokazuje pierwsze miejsce. Każda kolejna karta łączy dwie fotografie: u góry organizator widzi, gdzie ją schować, a na dole dziecko widzi miejsce, do którego ma pobiec. Znaleziona tam kartka prowadzi dalej, aż do karty mety.
@@ -47,6 +54,8 @@ Karta startowa pokazuje pierwsze miejsce. Każda kolejna karta łączy dwie foto
 W planie organizatora znajduje się zarówno kolejność gry dzieci, jak i zoptymalizowana kolejność rozkładania kartek. Algorytm korzysta ze współrzędnych, dlatego dorosły powinien zawsze sprawdzić trasę pod kątem ulic, ogrodzeń i innych przeszkód.
 
 ## Szybki start przez Docker Compose
+
+> **Synology:** użyj prostego pliku [`deploy/synology/docker-compose.yaml`](deploy/synology/docker-compose.yaml). Wymaga on wyłącznie `ADMIN_PASSWORD` i `SESSION_SECRET`; nie wymaga ręcznego tworzenia `ADMIN_PASSWORD_HASH`. Szczegóły są w [instrukcji dla Synology](docs/SYNOLOGY.md).
 
 Wymagany jest Docker z wtyczką Compose.
 
@@ -112,6 +121,8 @@ Polecenie uruchamia sprawdzanie typów, testy backendu i frontendu oraz produkcy
 ## Dokumentacja
 
 - [Instrukcja wdrożenia](docs/DEPLOYMENT.md)
+- [Wdrożenie przez GHCR na Synology](docs/SYNOLOGY.md)
+- [Minimalny Docker Compose dla Synology](deploy/synology/docker-compose.yaml)
 - [Instrukcja obsługi](docs/USER_GUIDE.md)
 - [Bezpieczeństwo i kopie zapasowe](docs/SECURITY_AND_BACKUP.md)
 - [Architektura](docs/ARCHITECTURE.md)

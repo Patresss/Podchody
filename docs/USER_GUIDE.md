@@ -30,9 +30,10 @@ Na ekranie trasy można:
 - wybrać **Losuj ponownie**;
 - przeciągać wiersze, aby ręcznie poprawić kolejność;
 - przełączyć się na **Kolejność chowania**, aby zobaczyć krótszą drogę organizatora;
+- zmienić zestaw **Zagadki** albo wybrać **Bez zagadek** bez tworzenia trasy od początku;
 - wrócić do projektu i utworzyć kolejną zapisaną trasę z innych zdjęć.
 
-Podczas tworzenia trasy można opcjonalnie włączyć zagadki. Dostępne są zadania niewymagające czytania — liczenie kropek i dokończenie wzoru — oraz dodawanie i odejmowanie do 10 albo 20. Konkretne zadania są losowane podczas przygotowywania kart.
+Podczas tworzenia trasy można opcjonalnie włączyć zagadki i zaznaczyć jeden albo kilka ich rodzajów. Dostępne są zadania niewymagające czytania — liczenie kropek, dokończenie wzoru i łączenie takich samych kształtów — zadania literowe z obrazkami oraz dodawanie i odejmowanie do 10 albo 20. Aplikacja rozdziela wybrane rodzaje możliwie równo między wszystkie karty i losowo wybiera ich pozycje. Przykładowo przy dwóch rodzajach i dziesięciu kartach każdy wystąpi pięć razy. Konkretne zadania są losowane podczas przygotowywania kart. Elementy zagadek są czarno-białe i można je rozwiązać zwykłym ołówkiem.
 
 Karta startowa prowadzi do punktu 1. Każde miejsce występuje raz, a ostatnia karta kończy grę metą.
 

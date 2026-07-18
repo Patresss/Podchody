@@ -1,0 +1,14 @@
+services:
+  podchody:
+    image: ghcr.io/patresss/podchody:latest
+    container_name: podchody
+    user: "1026:101"
+    ports:
+      - "3137:3000"
+    environment:
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
+      - SESSION_SECRET=${SESSION_SECRET}
+      - COOKIE_SECURE=true
+    volumes:
+      - /volume2/docker/podchody/data:/data
+    restart: unless-stopped

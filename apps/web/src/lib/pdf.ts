@@ -4,6 +4,7 @@ import JSZip from "jszip";
 import type { Point, Project, PuzzleType, RoutePlan } from "../types";
 import { distanceMeters, formatDistance } from "./geo";
 import { versionedPhotoUrl } from "./photo-url";
+import { distributePuzzleTypes } from "./puzzle-distribution";
 
 const PAGE_W = 1240;
 const PAGE_H = 1754;
@@ -314,15 +315,16 @@ async function createCardsPdf(input: PdfInput, images: Map<string, HTMLImageElem
   const document = pdfDocument();
   let first = true;
   const hidingOrder = new Map(input.hidingPointIds.map((pointId, index) => [pointId, index + 1]));
+  const distributedPuzzleTypes = distributePuzzleTypes(input.route.puzzleTypes, input.orderedPoints.length + 1);
   const cards: PrintCard[] = [
-    { current: null, next: input.orderedPoints[0]!, type: "start", gameTargetNumber: 1, hidingOrderNumber: null, puzzle: createCardPuzzle(input.route.puzzleType) },
+    { current: null, next: input.orderedPoints[0]!, type: "start", gameTargetNumber: 1, hidingOrderNumber: null, puzzle: createCardPuzzle(distributedPuzzleTypes[0] ?? null) },
     ...input.orderedPoints.map((current, index) => ({
       current,
       next: input.orderedPoints[index + 1] ?? null,
       type: index === input.orderedPoints.length - 1 ? "meta" as const : "step" as const,
       gameTargetNumber: index < input.orderedPoints.length - 1 ? index + 2 : null,
       hidingOrderNumber: hidingOrder.get(current.id) ?? null,
-      puzzle: createCardPuzzle(input.route.puzzleType),
+      puzzle: createCardPuzzle(distributedPuzzleTypes[index + 1] ?? null),
     })),
   ];
 
@@ -362,10 +364,35 @@ type PuzzleShape = "circle" | "square" | "triangle";
 type CardPuzzle =
   | { type: "equation"; expression: string }
   | { type: "counting"; count: number }
-  | { type: "pattern"; shapes: PuzzleShape[] };
+  | { type: "pattern"; shapes: PuzzleShape[] }
+  | { type: "matching"; left: PuzzleShape[]; right: PuzzleShape[] }
+  | { type: "word-copy"; emoji: string; word: string }
+  | { type: "missing-letter"; emoji: string; word: string; missingIndex: number };
+
+const WORD_PUZZLES = [
+  { emoji: "🐱", word: "KOT" },
+  { emoji: "🐶", word: "PIES" },
+  { emoji: "🐟", word: "RYBA" },
+  { emoji: "🏠", word: "DOM" },
+  { emoji: "🌲", word: "LAS" },
+  { emoji: "🚗", word: "AUTO" },
+  { emoji: "👁️", word: "OKO" },
+  { emoji: "👟", word: "BUT" },
+  { emoji: "🧀", word: "SER" },
+  { emoji: "🍦", word: "LÓD" },
+] as const;
 
 function randomInt(min: number, max: number) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function shuffled<T>(values: readonly T[]) {
+  const result = [...values];
+  for (let index = result.length - 1; index > 0; index -= 1) {
+    const target = randomInt(0, index);
+    [result[index], result[target]] = [result[target]!, result[index]!];
+  }
+  return result;
 }
 
 function createCardPuzzle(type: PuzzleType | null): CardPuzzle | null {
@@ -378,6 +405,18 @@ function createCardPuzzle(type: PuzzleType | null): CardPuzzle | null {
     while (second === first) second = shapes[randomInt(0, shapes.length - 1)]!;
     return { type: "pattern", shapes: Math.random() < 0.5 ? [first, second, first, second, first] : [first, first, second, first, first] };
   }
+  if (type === "matching") {
+    const shapes: PuzzleShape[] = ["circle", "square", "triangle"];
+    let right = shuffled(shapes);
+    while (right.every((shape, index) => shape === shapes[index])) right = shuffled(shapes);
+    return { type: "matching", left: shapes, right };
+  }
+  if (type === "word-copy" || type === "missing-letter") {
+    const entry = WORD_PUZZLES[randomInt(0, WORD_PUZZLES.length - 1)]!;
+    return type === "word-copy"
+      ? { type, emoji: entry.emoji, word: entry.word }
+      : { type, emoji: entry.emoji, word: entry.word, missingIndex: randomInt(0, entry.word.length - 1) };
+  }
   const limit = type === "math-10" ? 10 : 20;
   if (Math.random() < 0.5) {
     const left = randomInt(1, limit - 1);
@@ -389,9 +428,11 @@ function createCardPuzzle(type: PuzzleType | null): CardPuzzle | null {
   return { type: "equation", expression: `${left} - ${right} = ____` };
 }
 
-function drawPuzzleShape(context: CanvasRenderingContext2D, shape: PuzzleShape, centerX: number, centerY: number, size: number, color: string) {
+function drawPuzzleShape(context: CanvasRenderingContext2D, shape: PuzzleShape, centerX: number, centerY: number, size: number) {
   context.save();
-  context.fillStyle = color;
+  context.fillStyle = COLORS.surface;
+  context.strokeStyle = COLORS.ink;
+  context.lineWidth = 3;
   context.beginPath();
   if (shape === "circle") context.arc(centerX, centerY, size, 0, Math.PI * 2);
   else if (shape === "square") context.roundRect(centerX - size, centerY - size, size * 2, size * 2, 4);
@@ -402,13 +443,33 @@ function drawPuzzleShape(context: CanvasRenderingContext2D, shape: PuzzleShape, 
     context.closePath();
   }
   context.fill();
+  context.stroke();
   context.restore();
 }
 
+function drawPuzzleEmoji(context: CanvasRenderingContext2D, emoji: string, centerX: number, centerY: number) {
+  context.save();
+  context.font = '34px "Apple Color Emoji", "Segoe UI Emoji", sans-serif';
+  context.textAlign = "center";
+  context.textBaseline = "middle";
+  context.fillText(emoji, centerX, centerY + 1);
+  context.restore();
+}
+
+function drawLetterBoxes(context: CanvasRenderingContext2D, word: string, startX: number, centerY: number, showLetters: boolean, missingIndex?: number) {
+  const boxSize = 34;
+  const gap = 8;
+  [...word].forEach((letter, index) => {
+    const boxX = startX + index * (boxSize + gap);
+    roundedRect(context, boxX, centerY - boxSize / 2, boxSize, boxSize, 5, COLORS.surface, COLORS.ink);
+    if (showLetters && index !== missingIndex) text(context, letter, boxX + boxSize / 2, centerY + 9, 24, COLORS.ink, 800, "center");
+  });
+}
+
 function drawPuzzle(context: CanvasRenderingContext2D, puzzle: CardPuzzle, x: number, y: number, width: number, height: number) {
-  roundedRect(context, x, y, width, height, 14, COLORS.orangeSoft);
-  roundedRect(context, x + 13, y + height / 2 - 19, 38, 38, 19, COLORS.orange);
-  text(context, "?", x + 32, y + height / 2 + 9, 24, COLORS.surface, 800, "center");
+  roundedRect(context, x, y, width, height, 14, COLORS.surface, COLORS.border);
+  roundedRect(context, x + 13, y + height / 2 - 19, 38, 38, 19, "#eef1ee", COLORS.ink);
+  text(context, "?", x + 32, y + height / 2 + 9, 24, COLORS.ink, 800, "center");
   const contentX = x + 70;
   const centerY = y + height / 2;
   if (puzzle.type === "equation") {
@@ -421,7 +482,7 @@ function drawPuzzle(context: CanvasRenderingContext2D, puzzle: CardPuzzle, x: nu
     const answerWidth = 92;
     const startX = contentX + Math.max(0, (width - 84 - dotsWidth - answerWidth) / 2);
     for (let index = 0; index < puzzle.count; index += 1) {
-      context.fillStyle = index % 2 === 0 ? COLORS.green : COLORS.blue;
+      context.fillStyle = COLORS.ink;
       context.beginPath();
       context.arc(startX + index * step + 8, centerY, 8, 0, Math.PI * 2);
       context.fill();
@@ -429,11 +490,32 @@ function drawPuzzle(context: CanvasRenderingContext2D, puzzle: CardPuzzle, x: nu
     text(context, "= ____", startX + dotsWidth + 17, centerY + 10, 27, COLORS.ink, 800);
     return;
   }
+  if (puzzle.type === "word-copy") {
+    drawPuzzleEmoji(context, puzzle.emoji, contentX + 24, centerY);
+    text(context, puzzle.word, contentX + 62, centerY + 9, 24, COLORS.ink, 800);
+    text(context, "→", contentX + 130, centerY + 9, 25, COLORS.muted, 700, "center");
+    drawLetterBoxes(context, puzzle.word, contentX + 154, centerY, false, -1);
+    return;
+  }
+  if (puzzle.type === "missing-letter") {
+    drawPuzzleEmoji(context, puzzle.emoji, contentX + 36, centerY);
+    drawLetterBoxes(context, puzzle.word, contentX + 88, centerY, true, puzzle.missingIndex);
+    return;
+  }
+  if (puzzle.type === "matching") {
+    const rowGap = 20;
+    const leftX = contentX + 100;
+    const rightX = contentX + 285;
+    puzzle.left.forEach((shape, index) => drawPuzzleShape(context, shape, leftX, centerY + (index - 1) * rowGap, 7));
+    puzzle.right.forEach((shape, index) => drawPuzzleShape(context, shape, rightX, centerY + (index - 1) * rowGap, 7));
+    text(context, "↔", (leftX + rightX) / 2, centerY + 8, 25, COLORS.muted, 600, "center");
+    return;
+  }
   const step = 48;
   const startX = contentX + Math.max(0, (width - 84 - step * 6) / 2) + 20;
-  puzzle.shapes.forEach((shape, index) => drawPuzzleShape(context, shape, startX + index * step, centerY, 12, index % 2 === 0 ? COLORS.green : COLORS.blue));
+  puzzle.shapes.forEach((shape, index) => drawPuzzleShape(context, shape, startX + index * step, centerY, 12));
   context.save();
-  context.strokeStyle = COLORS.orange;
+  context.strokeStyle = COLORS.ink;
   context.lineWidth = 3;
   context.setLineDash([5, 4]);
   context.strokeRect(startX + puzzle.shapes.length * step - 15, centerY - 17, 34, 34);
@@ -517,7 +599,7 @@ export async function buildPrintPackage(input: PdfInput, onProgress?: (label: st
     "",
     "01: mapa i kolejność gry dla organizatora",
     "02: karty, cztery sztuki na stronie A4; zielone numery to kolejność gry, niebieskie to kolejność chowania",
-    input.route.puzzleType ? "Zagadki są losowane osobno dla każdej karty podczas tworzenia PDF-u." : "",
+    input.route.puzzleTypes.length ? "Wybrane rodzaje zagadek są rozdzielane możliwie równo i losowo między karty." : "",
     "",
     "Mapy: © OpenStreetMap contributors",
   ].join("\n"));

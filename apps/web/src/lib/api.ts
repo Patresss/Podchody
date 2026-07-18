@@ -49,7 +49,7 @@ export const api = {
     body: JSON.stringify(body),
   }),
   deletePoint: (id: string) => request<void>(`/api/points/${id}`, { method: "DELETE" }),
-  createRoute: (projectId: string, name: string, selection: { mode: "automatic"; count: number; distanceMode: RouteDistanceMode; puzzleType: PuzzleType | null } | { mode: "manual"; pointIds: string[]; distanceMode: RouteDistanceMode; puzzleType: PuzzleType | null }) => request<{ route: RoutePlan }>(`/api/projects/${projectId}/routes`, {
+  createRoute: (projectId: string, name: string, selection: { mode: "automatic"; count: number; distanceMode: RouteDistanceMode; puzzleTypes: PuzzleType[] } | { mode: "manual"; pointIds: string[]; distanceMode: RouteDistanceMode; puzzleTypes: PuzzleType[] }) => request<{ route: RoutePlan }>(`/api/projects/${projectId}/routes`, {
     method: "POST",
     body: JSON.stringify({ name, ...selection }),
   }),
@@ -62,6 +62,10 @@ export const api = {
   renameRoute: (id: string, name: string) => request<{ route: RoutePlan }>(`/api/routes/${id}`, {
     method: "PATCH",
     body: JSON.stringify({ name }),
+  }),
+  updateRoutePuzzles: (id: string, puzzleTypes: PuzzleType[]) => request<{ route: RoutePlan }>(`/api/routes/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify({ puzzleTypes }),
   }),
   deleteRoute: (id: string) => request<void>(`/api/routes/${id}`, { method: "DELETE" }),
 };
