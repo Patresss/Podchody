@@ -1,0 +1,25 @@
+{
+  "name": "podchody",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "apps/server",
+    "apps/web"
+  ],
+  "scripts": {
+    "dev": "concurrently -n API,WEB -c cyan,magenta \"npm run dev -w @podchody/server\" \"npm run dev -w @podchody/web\"",
+    "build": "npm run build -w @podchody/web && npm run build -w @podchody/server",
+    "start": "npm run start -w @podchody/server",
+    "test": "npm run test -w @podchody/server && npm run test -w @podchody/web",
+    "typecheck": "npm run typecheck -w @podchody/server && npm run typecheck -w @podchody/web",
+    "hash-password": "npm run hash-password -w @podchody/server",
+    "check": "npm run typecheck && npm test && npm run build"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  }
+}
